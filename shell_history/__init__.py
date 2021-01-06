@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""This is a simple python template extension.
-Search bash/fish history and launch/copy commands from it.
+"""Search bash/fish history and launch/copy commands from it.
 
 This extension does simple case-insensitive search.
 
