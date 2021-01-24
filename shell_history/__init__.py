@@ -8,7 +8,7 @@ Synopsis: <trigger><query>"""
 
 from albertv0 import *
 from pathlib import Path
-import re
+import re, shlex
 
 __iid__ = "PythonInterface/v0.1"
 __prettyname__ = "Shell History"
@@ -27,6 +27,7 @@ class Cmd:
 
     self.history.append({
       'cmd': cmd,
+      'cmdlex': shlex.split(cmd),
       'time': time,
     })
   def sort(self):
@@ -49,7 +50,7 @@ def addBashHistory(lines):
       if cmd != '':
         history.add(cmd, time)
       
-      time = int(line.split('#')[1])
+      if line.split('#')[1].isnumeric(): time = int(line.split('#')[1])
       cmd = ''
     else:
       if cmd != '' and time != 0:
@@ -92,20 +93,18 @@ def initialize():
 def handleQuery(query):
   if not query.isTriggered: return
   
-  def containsQuery(line):
-    if len(line['cmd']) > 200: return False
-    return query.string.lower() in line['cmd'].lower()
+  queryLower = query.string.lower().split(' ')
   
   items = []
-  for line in filter(containsQuery, history.history):
+  for line in (line for line in history.history if all(word in line['cmd'].lower() for word in queryLower)):
     item = Item()
     item.text = line['cmd']
     item.subtext = 'Launch in terminal "' + line['cmd'] + '"'
     item.completion = __trigger__ + line['cmd']
     item.icon = ':terminal'
-    item.addAction(TermAction(text = 'Launch in terminal', commandline = line['cmd'].split(' ')))
+    item.addAction(TermAction(text = 'Launch in terminal', commandline = line['cmdlex']))
     item.addAction(ClipAction(text = 'Copy command to clipboard', clipboardText = line['cmd']))
-    item.addAction(ProcAction(text = 'Launch in background', commandline = line['cmd'].split(' ')))
+    item.addAction(ProcAction(text = 'Launch in background', commandline = line['cmdlex']))
 
     items.append(item)
 

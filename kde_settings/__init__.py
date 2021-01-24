@@ -49,24 +49,21 @@ def initialize():
         'icon': icon,
         'comment': comment,
         'execText': 'Open ' + name,
-        'keywords': keywords,
+        'searchString': name.lower() + ' ' + comment.lower() + ' ' + keywords,
       })
 
 def handleQuery(query):
   items = []
   if query.rawString == '': return items
+  queryArr = query.rawString.lower().split(' ')
 
   def test(setting):
-    queryLower = query.rawString.lower()
-    if setting['keywords'] != '':
-      for word in queryLower.split(' '):
-        if word in setting['keywords']: return True
-
-    return queryLower in setting['name'].lower() or queryLower in setting['comment'].lower()
+    for word in queryArr:
+      if word in setting['searchString']: return True
 
   # for match in process.extractBests(query.rawString, settings.keys(), scorer = fuzz.token_sort_ratio, score_cutoff = 50):
     # matchedItem = settings[match[0]]
-  for matchedItem in filter(test, settings):
+  for matchedItem in (setting for setting in settings if test(setting)):
     item = Item()
 
     # item.id = match[0]
